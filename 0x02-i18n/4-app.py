@@ -1,52 +1,62 @@
 #!/usr/bin/env python3
-
 """
 This module includes a small module for
 learning and practicing i18n in Flask
 """
-
-
-from flask import Flask
-from flask import request
-from flask import render_template
+from flask import Flask, render_template, request
 from flask_babel import Babel
 
+app = Flask(__name__)
 
-class Config(object):
-     """Represents a Flask Babel configuration.
+app.url_map.strict_slashes = False
+
+
+class Config:
+    """Represents a Flask Babel configuration.
     """
     LANGUAGES = ["en", "fr"]
     BABEL_DEFAULT_LOCALE = "en"
     BABEL_DEFAULT_TIMEZONE = "UTC"
 
 
-app = Flask(__name__)
 app.config.from_object(Config)
-app.url_map.strict_slashes = False
 babel = Babel(app)
 
 
 @babel.localeselector
 def get_locale() -> str:
-    """Retrieves the locale for a web page.
+    """Determines the best match for the client's preferred language.
+
+    This function uses Flask's request object to access the client's preferred
+    languages and the app's supported languages (defined in the Config class)
+    to determine the best match. The best match is then returned as the locale.
+
+    Returns:
+        str: The locale code for the best match (e.g. "en", "fr").
     """
-    queries = request.query_string.decode('utf-8').split('&')
-    query_table = dict(map(
-        lambda x: (x if '=' in x else '{}='.format(x)).split('='),
-        queries,
-    ))
-    if 'locale' in query_table:
-        if query_table['locale'] in app.config["LANGUAGES"]:
-            return query_table['locale']
-    return request.accept_languages.best_match(app.config["LANGUAGES"])
+    # Get the locale parameter from the incoming request
+    locale = request.args.get('locale', None)
+    # Get list of supported languages from Config
+    supported_languages = app.config["LANGUAGES"]
+    if locale and locale in supported_languages:
+        # If locale parameter is present and is a supported locale,
+        # return it
+        return locale
+    else:
+        # Use request.accept_languages to get the best possible match
+        best_match = request.accept_languages.best_match(supported_languages)
+        return best_match
 
 
-@app.route('/')
-def get_index() -> str:
-    """The home/index page.
+@app.route("/")
+def index_4() -> str:
+    """The index function displays the home page of the web application.
+
+    Returns:
+        str: contents of the home page.
     """
-    return render_template('4-index.html')
+    return render_template("4-index.html")
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(debug=True)
