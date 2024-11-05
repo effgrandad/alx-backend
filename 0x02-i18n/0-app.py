@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-This module includes a small module for
-learning and practicing i18n in Flask
+This module holds a simple module to
+learn and practice i18n in flask
 """
 
 from flask import Flask,  render_template
@@ -35,7 +35,7 @@ def hello_holberton():
     ____________________________
     Example
         hello_hoberton()
-    """""
+    """
     return render_template("0-index.html")
 
 
